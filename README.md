@@ -1,4 +1,4 @@
-# Portfolio-project 
+
 Minimal To-Do / Notes App
 A lightweight, fast, and responsive note-taking app built with vanilla JavaScript.
 Designed to be minimal, aesthetic, and easy to use — perfect for keeping track of your daily tasks or jotting down quick notes.
