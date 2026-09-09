@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Particle Portrait</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#08091c;
+    --bg-mid:#12142e;
+    --panel:rgba(255,255,255,0.035);
+    --hairline:rgba(207,168,94,0.35);
+    --gold:#cfa85e;
+    --gold-soft:rgba(207,168,94,0.16);
+    --text:#f2ede1;
+    --muted:#8f89a8;
+    --grad-a:#1c1e42;
+    --grad-b:#1a1330;
+  }
+  html[data-theme="light"]{
+    --bg-deep:#f7f3ea;
+    --bg-mid:#ece4d2;
+    --panel:rgba(0,0,0,0.03);
+    --hairline:rgba(154,116,42,0.35);
+    --gold:#9a6f24;
+    --gold-soft:rgba(154,116,42,0.14);
+    --text:#211f30;
+    --muted:#736c88;
+    --grad-a:#f0e6d2;
+    --grad-b:#eee0e8;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0; min-height:100%;
+    color:var(--text);
+    font-family:'Inter', sans-serif;
+    display:flex; justify-content:center;
+    position:relative;
+    overflow-x:hidden;
+    transition: color .3s ease;
+  }
+  body{
+    background:
+      radial-gradient(ellipse at 20% -10%, var(--grad-a) 0%, transparent 55%),
+      radial-gradient(ellipse at 90% 110%, var(--grad-b) 0%, transparent 55%),
+      linear-gradient(180deg, var(--bg-deep), var(--bg-mid));
+    background-size: 160% 160%, 160% 160%, 100% 100%;
+    animation: driftBg 55s ease-in-out infinite alternate;
+    transition: background-color .3s ease;
+  }
+  @keyframes driftBg{
+    0%   { background-position: 0% 0%, 100% 100%, 0% 0%; }
+    50%  { background-position: 30% 20%, 70% 80%, 0% 0%; }
+    100% { background-position: 55% 10%, 45% 95%, 0% 0%; }
+  }
+  .app{
+    width:100%; max-width:560px;
+    padding:36px 20px 28px;
+    display:flex; flex-direction:column; align-items:center;
+  }
+  .topbar{
+    width:100%; display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:10px;
+  }
+  .eyebrow{
+    font-size:11px; letter-spacing:0.22em; text-transform:uppercase;
+    color:var(--gold); opacity:0.85;
+  }
+  .theme-toggle{
+    width:34px; height:34px; border-radius:50%;
+    border:1px solid var(--hairline);
+    background:var(--gold-soft); color:var(--gold);
+    display:flex; align-items:center; justify-content:center;
+    font-size:15px; cursor:pointer;
+    transition:background .2s ease, transform .15s ease;
+  }
+  .theme-toggle:hover{ background:rgba(207,168,94,0.26); transform:translateY(-1px); }
+  h1{
+    font-family:'Cormorant Garamond', serif;
+    font-weight:600; font-style:italic;
+    font-size:clamp(28px,6vw,38px);
+    margin:0 0 8px;
+    text-align:center;
+    letter-spacing:0.01em;
+  }
+  .sub{
+    color:var(--muted); font-size:13.5px; text-align:center;
+    max-width:380px; line-height:1.55; margin:0 0 26px;
+  }
+  .stage{
+    position:relative;
+    width:100%; max-width:480px; aspect-ratio:1/1;
+    border-radius:18px;
+    border:1px solid var(--hairline);
+    background:var(--panel);
+    box-shadow:0 0 0 1px rgba(0,0,0,0.15), 0 30px 60px -20px rgba(0,0,0,0.45), 0 0 60px -25px rgba(207,168,94,0.25);
+    overflow:hidden;
+  }
+  canvas{
+    display:block; width:100%; height:100%;
+    cursor:crosshair; touch-action:none;
+  }
+  .hint{
+    position:absolute; bottom:12px; left:0; right:0;
+    text-align:center; font-size:11px; color:var(--muted);
+    letter-spacing:0.04em; pointer-events:none;
+    opacity:0.8;
+  }
+  .controls{
+    width:100%; margin-top:22px;
+    display:flex; flex-direction:column; gap:16px; align-items:center;
+  }
+  .sliders-panel{
+    width:100%; max-width:480px;
+    display:grid; grid-template-columns:1fr 1fr; gap:16px;
+    background:var(--panel);
+    padding:14px 18px;
+    border-radius:14px;
+    border:1px solid var(--hairline);
+  }
+  .slider-group{
+    display:flex; flex-direction:column; gap:6px;
+  }
+  .slider-label{
+    display:flex; justify-content:space-between;
+    font-size:11.5px; color:var(--muted);
+    letter-spacing:0.02em;
+  }
+  .slider-label span:last-child{
+    color:var(--gold); font-weight:500;
+  }
+  input[type="range"]{
+    -webkit-appearance:none;
+    width:100%; height:4px;
+    border-radius:2px;
+    background:var(--hairline);
+    outline:none;
+  }
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:14px; height:14px; border-radius:50%;
+    background:var(--gold);
+    cursor:pointer;
+    transition:transform .15s ease;
+  }
+  input[type="range"]::-webkit-slider-thumb:hover{
+    transform:scale(1.2);
+  }
+  .row{ display:flex; flex-wrap:wrap; justify-content:center; gap:10px; }
+  .btn{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:10px 18px;
+    border:1px solid var(--hairline);
+    border-radius:999px;
+    background:var(--gold-soft);
+    color:var(--gold);
+    font-size:12.5px; font-weight:500;
+    cursor:pointer;
+    transition:background .2s ease, transform .15s ease, opacity .2s ease;
+  }
+  .btn:hover{ background:rgba(207,168,94,0.26); transform:translateY(-1px); }
+  .btn.ghost{
+    background:var(--panel);
+    color:var(--text);
+    border-color:var(--hairline);
+  }
+  .btn.ghost:hover{ background:rgba(154,116,42,0.1); }
+  .btn[disabled]{
+    opacity:0.35; cursor:not-allowed; pointer-events:none;
+  }
+  .foot{
+    margin-top:22px; font-size:11px; color:var(--muted); opacity:0.65;
+    text-align:center; max-width:360px; line-height:1.5;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <span class="eyebrow">Portrait · Reassembled</span>
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle light/dark mode">🌙</button>
+  </div>
+  <h1>Particle Portrait</h1>
+  <p class="sub">Upload a photo — it dissolves into evenly spaced dots that line up row by row to reform the shape. Move your cursor through it to scatter what's near you.</p>
+
+  <div class="stage">
+    <canvas id="canvas"></canvas>
+  </div>
+
+  <div class="controls">
+    <div class="sliders-panel">
+      <div class="slider-group">
+        <div class="slider-label">
+          <span>Opacity</span>
+          <span id="opacityVal">92%</span>
+        </div>
+        <input type="range" id="opacitySlider" min="0.1" max="1.0" step="0.01" value="0.92">
+      </div>
+      <div class="slider-group">
+        <div class="slider-label">
+          <span>Density</span>
+          <span id="densityVal">Medium</span>
+        </div>
+        <!-- Reversed logic visually: min spacing = maximum particle density -->
+        <input type="range" id="densitySlider" min="5" max="15" step="1" value="9">
+      </div>
+    </div>
+
+    <div class="row">
+      <label class="btn">
+        ⤒ Upload your photo
+        <input type="file" id="fileInput" accept="image/*" hidden>
+      </label>
+    </div>
+    <div class="row">
+      <button class="btn ghost" id="downloadPng" disabled>⤓ Download image (.png, transparent)</button>
+      <button class="btn ghost" id="downloadHtml" disabled>⤓ Download embed code (.html)</button>
+      <button class="btn ghost" id="copyHtml" disabled>⧉ Copy embed code</button>
+    </div>
+  </div>
+
+  <p class="foot">Everything happens on your device — the photo is never uploaded anywhere, it's just pixels sampled into particles in your browser. The embed code bundles your photo right into a single self-contained file you can drop into any site.</p>
+</div>
+
+<script>
+const SIZE = 560;
+let gridStep = 9;         // dynamic spacing between particles
+const CIRCLE_R = 2.1;     // uniform radius for every particle
+let circleAlpha = 0.92;   // dynamic opacity
+const SPRING = 0.045;
+const FRICTION = 0.86;
+const REPEL_R = 46;
+const REPEL_STRENGTH = 2.6;
+
+let theme = 'dark';
+let activeImage = null; // keeps reference to uploaded image for density re-sampling
+
+const canvas = document.getElementById('canvas');
+const dpr = Math.min(window.devicePixelRatio || 1, 2);
+canvas.width = SIZE * dpr;
+canvas.height = SIZE * dpr;
+const ctx = canvas.getContext('2d');
+ctx.scale(dpr, dpr);
+
+function clamp(v){ return Math.max(0, Math.min(255, v)); }
+function goldColor(){
+  const base = theme === 'light' ? { r: 150, g: 108, b: 34 } : { r: 207, g: 168, b: 94 };
+  const v = 44 * (Math.random() - 0.5);
+  return { r: clamp(base.r + v), g: clamp(base.g + v * 0.85), b: clamp(base.b + v * 0.55) };
+}
+function bgFillColor(){
+  return theme === 'light' ? 'rgba(247,243,234,0.26)' : 'rgba(9,10,26,0.24)';
+}
+
+function drawImageCover(c, img, w, h){
+  const ir = img.width / img.height, cr = w / h;
+  let sx, sy, sw, sh;
+  if (ir > cr){ sh = img.height; sw = sh * cr; sx = (img.width - sw) / 2; sy = 0; }
+  else { sw = img.width; sh = sw / cr; sx = 0; sy = (img.height - sh) / 2; }
+  c.drawImage(img, sx, sy, sw, sh, 0, 0, w, h);
+}
+
+function gridSample(offCtx, w, h, step, colorOverride, lumThreshold = 232){
+  const data = offCtx.getImageData(0, 0, w, h).data;
+  const points = [];
+  for (let y = 0; y < h; y += step){
+    for (let x = 0; x < w; x += step){
+      const idx = (y * w + x) * 4;
+      if (data[idx + 3] < 100) continue;
+      const r = data[idx], g = data[idx + 1], b = data[idx + 2];
+      const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+      //if (lum > lumThreshold) continue;
+      const col = colorOverride ? colorOverride() : { r, g, b };
+      points.push({ x, y, r: col.r, g: col.g, b: col.b });
+    }
+  }
+  return points;
+}
+
+function renderDefaultSilhouette(){
+  const off = document.createElement('canvas');
+  off.width = SIZE; off.height = SIZE;
+  const c = off.getContext('2d');
+  c.fillStyle = '#ffffff'; c.fillRect(0, 0, SIZE, SIZE);
+  c.fillStyle = '#000000';
+  c.beginPath(); c.arc(SIZE / 2, SIZE * 0.36, SIZE * 0.15, 0, Math.PI * 2); c.fill();
+  c.beginPath();
+  c.moveTo(SIZE * 0.27, SIZE * 0.96);
+  c.quadraticCurveTo(SIZE * 0.5, SIZE * 0.53, SIZE * 0.73, SIZE * 0.96);
+  c.closePath(); c.fill();
+  return c;
+}
+
+let particles = [];
+
+function initParticles(points){
+  particles = points.map(p => ({
+    x: Math.random() * SIZE, y: Math.random() * SIZE,
+    tx: p.x, ty: p.y, r: p.r, g: p.g, b: p.b,
+    vx: 0, vy: 0
+  }));
+}
+
+function updateParticleGrid(){
+  const off = document.createElement('canvas');
+  off.width = SIZE; off.height = SIZE;
+  const c = off.getContext('2d');
+  c.fillStyle = '#ffffff'; c.fillRect(0, 0, SIZE, SIZE);
+
+  if (activeImage) {
+    drawImageCover(c, activeImage, SIZE, SIZE);
+    initParticles(gridSample(c, SIZE, SIZE, gridStep, null));
+  } else {
+    initParticles(gridSample(renderDefaultSilhouette(), SIZE, SIZE, gridStep, goldColor));
+  }
+}
+
+updateParticleGrid();
+
+const mouse = { x: -9999, y: -9999, active: false };
+function getPos(e){
+  const rect = canvas.getBoundingClientRect();
+  const cx = e.touches ? e.touches[0].clientX : e.clientX;
+  const cy = e.touches ? e.touches[0].clientY : e.clientY;
+  return { x: (cx - rect.left) / rect.width * SIZE, y: (cy - rect.top) / rect.height * SIZE };
+}
+canvas.addEventListener('mousemove', e => { const p = getPos(e); mouse.x = p.x; mouse.y = p.y; mouse.active = true; });
+canvas.addEventListener('mouseleave', () => mouse.active = false);
+canvas.addEventListener('touchmove', e => { e.preventDefault(); const p = getPos(e); mouse.x = p.x; mouse.y = p.y; mouse.active = true; }, { passive: false });
+canvas.addEventListener('touchend', () => mouse.active = false);
+
+function tick(){
+  ctx.fillStyle = bgFillColor();
+  ctx.fillRect(0, 0, SIZE, SIZE);
+
+  for (const pt of particles){
+    if (mouse.active){
+      const dx = pt.x - mouse.x, dy = pt.y - mouse.y;
+      const distSq = dx * dx + dy * dy;
+      if (distSq < REPEL_R * REPEL_R){
+        const dist = Math.sqrt(distSq) || 0.1;
+        const force = (REPEL_R - dist) / REPEL_R;
+        pt.vx += (dx / dist) * force * REPEL_STRENGTH;
+        pt.vy += (dy / dist) * force * REPEL_STRENGTH;
+      }
+    }
+    pt.vx += (pt.tx - pt.x) * SPRING;
+    pt.vy += (pt.ty - pt.y) * SPRING;
+    pt.vx *= FRICTION; pt.vy *= FRICTION;
+    pt.x += pt.vx; pt.y += pt.vy;
+
+    ctx.fillStyle = `rgba(${pt.r | 0},${pt.g | 0},${pt.b | 0},${circleAlpha})`;
+    ctx.beginPath(); ctx.arc(pt.x, pt.y, CIRCLE_R, 0, Math.PI * 2); ctx.fill();
+  }
+  requestAnimationFrame(tick);
+}
+tick();
+
+// --- Sliders Setup ---
+const opacitySlider = document.getElementById('opacitySlider');
+const opacityVal = document.getElementById('opacityVal');
+opacitySlider.addEventListener('input', (e) => {
+  circleAlpha = parseFloat(e.target.value);
+  opacityVal.textContent = Math.round(circleAlpha * 100) + '%';
+});
+
+const densitySlider = document.getElementById('densitySlider');
+const densityVal = document.getElementById('densityVal');
+densitySlider.addEventListener('input', (e) => {
+  gridStep = parseInt(e.target.value, 10);
+  if (gridStep <= 6) densityVal.textContent = 'High';
+  else if (gridStep <= 10) densityVal.textContent = 'Medium';
+  else densityVal.textContent = 'Low';
+  updateParticleGrid();
+});
+
+// --- Theme toggle ---
+const themeToggle = document.getElementById('themeToggle');
+themeToggle.addEventListener('click', () => {
+  theme = theme === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', theme);
+  themeToggle.textContent = theme === 'dark' ? '🌙' : '☀️';
+  if (!uploadedDataUrl){
+    updateParticleGrid();
+  }
+});
+
+const hint = document.getElementById('hint');
+const downloadPngBtn = document.getElementById('downloadPng');
+const downloadHtmlBtn = document.getElementById('downloadHtml');
+const copyHtmlBtn = document.getElementById('copyHtml');
+let uploadedDataUrl = null;
+
+document.getElementById('fileInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    uploadedDataUrl = ev.target.result;
+    const img = new Image();
+    img.onload = () => {
+      activeImage = img;
+      updateParticleGrid();
+      hint.style.display = 'none';
+      downloadPngBtn.disabled = false;
+      downloadHtmlBtn.disabled = false;
+      copyHtmlBtn.disabled = false;
+    };
+    img.src = uploadedDataUrl;
+  };
+  reader.readAsDataURL(file);
+});
+
+// --- Download a transparent PNG ---
+downloadPngBtn.addEventListener('click', () => {
+  const temp = document.createElement('canvas');
+  temp.width = canvas.width; temp.height = canvas.height;
+  const tctx = temp.getContext('2d');
+  tctx.scale(dpr, dpr);
+  for (const pt of particles){
+    tctx.fillStyle = `rgba(${pt.r | 0},${pt.g | 0},${pt.b | 0},${circleAlpha})`;
+    tctx.beginPath(); tctx.arc(pt.x, pt.y, CIRCLE_R, 0, Math.PI * 2); tctx.fill();
+  }
+  const link = document.createElement('a');
+  link.download = 'particle-portrait.png';
+  link.href = temp.toDataURL('image/png');
+  link.click();
+});
+
+// --- Build standalone HTML ---
+function buildEmbedHtml(){
+  const isLight = theme === 'light';
+  const bgDeep = isLight ? '#f7f3ea' : '#08091c';
+  const bgMid = isLight ? '#ece4d2' : '#12142e';
+  const gradA = isLight ? '#f0e6d2' : '#1c1e42';
+  const gradB = isLight ? '#eee0e8' : '#1a1330';
+  const bgFill = isLight ? 'rgba(247,243,234,0.26)' : 'rgba(9,10,26,0.24)';
+
+  const lines = [];
+  lines.push('<!DOCTYPE html>');
+  lines.push('<html lang="en"><head><meta charset="UTF-8"><title>Particle Portrait</title>');
+  lines.push('<style>');
+  lines.push('  .particle-portrait-stage{position:relative;width:100%;max-width:480px;aspect-ratio:1/1;');
+  lines.push('    border-radius:18px;overflow:hidden;margin:0 auto;');
+  lines.push('    background-size:160% 160%;animation:ppDrift 55s ease-in-out infinite alternate;');
+  lines.push('    background-image:radial-gradient(ellipse at 20% -10%,' + gradA + ' 0%,transparent 55%),');
+  lines.push('      radial-gradient(ellipse at 90% 110%,' + gradB + ' 0%,transparent 55%),');
+  lines.push('      linear-gradient(180deg,' + bgDeep + ',' + bgMid + ');}');
+  lines.push('  @keyframes ppDrift{0%{background-position:0% 0%,100% 100%,0% 0%;}');
+  lines.push('    50%{background-position:30% 20%,70% 80%,0% 0%;}');
+  lines.push('    100%{background-position:55% 10%,45% 95%,0% 0%;}}');
+  lines.push('  .particle-portrait-stage canvas{display:block;width:100%;height:100%;cursor:crosshair;touch-action:none;}');
+  lines.push('</style></head><body>');
+  lines.push('<div class="particle-portrait-stage"><canvas id="ppCanvas"></canvas></div>');
+  lines.push('<script>');
+  lines.push('(function(){');
+  lines.push('  var SIZE=560, GRID_STEP=' + gridStep + ', CIRCLE_R=' + CIRCLE_R + ', CIRCLE_ALPHA=' + circleAlpha + ';');
+  lines.push('  var SPRING=' + SPRING + ', FRICTION=' + FRICTION + ', REPEL_R=' + REPEL_R + ', REPEL_STRENGTH=' + REPEL_STRENGTH + ';');
+  lines.push('  var BG_FILL="' + bgFill + '";');
+  lines.push('  var PHOTO_DATA_URL="' + uploadedDataUrl + '";');
+  lines.push('  var canvas=document.getElementById("ppCanvas");');
+  lines.push('  var dpr=Math.min(window.devicePixelRatio||1,2);');
+  lines.push('  canvas.width=SIZE*dpr; canvas.height=SIZE*dpr;');
+  lines.push('  var ctx=canvas.getContext("2d"); ctx.scale(dpr,dpr);');
+  lines.push('  function drawImageCover(c,img,w,h){');
+  lines.push('    var ir=img.width/img.height, cr=w/h, sx,sy,sw,sh;');
+  lines.push('    if(ir>cr){sh=img.height;sw=sh*cr;sx=(img.width-sw)/2;sy=0;}');
+  lines.push('    else{sw=img.width;sh=sw/cr;sx=0;sy=(img.height-sh)/2;}');
+  lines.push('    c.drawImage(img,sx,sy,sw,sh,0,0,w,h);');
+  lines.push('  }');
+  lines.push('  function gridSample(offCtx,w,h,step,lumThreshold){');
+  lines.push('    lumThreshold=lumThreshold||232;');
+  lines.push('    var data=offCtx.getImageData(0,0,w,h).data, points=[];');
+  lines.push('    for(var y=0;y<h;y+=step){for(var x=0;x<w;x+=step){');
+  lines.push('      var idx=(y*w+x)*4; if(data[idx+3]<100) continue;');
+  lines.push('      var r=data[idx],g=data[idx+1],b=data[idx+2];');
+  lines.push('      var lum=0.299*r+0.587*g+0.114*b; if(lum>lumThreshold) continue;');
+  lines.push('      points.push({x:x,y:y,r:r,g:g,b:b});');
+  lines.push('    }} return points;');
+  lines.push('  }');
+  lines.push('  var particles=[];');
+  lines.push('  function initParticles(points){');
+  lines.push('    particles=points.map(function(p){return {x:Math.random()*SIZE,y:Math.random()*SIZE,');
+  lines.push('      tx:p.x,ty:p.y,r:p.r,g:p.g,b:p.b,vx:0,vy:0};});');
+  lines.push('  }');
+  lines.push('  var mouse={x:-9999,y:-9999,active:false};');
+  lines.push('  function getPos(e){');
+  lines.push('    var rect=canvas.getBoundingClientRect();');
+  lines.push('    var cx=e.touches?e.touches[0].clientX:e.clientX;');
+  lines.push('    var cy=e.touches?e.touches[0].clientY:e.clientY;');
+  lines.push('    return {x:(cx-rect.left)/rect.width*SIZE, y:(cy-rect.top)/rect.height*SIZE};');
+  lines.push('  }');
+  lines.push('  canvas.addEventListener("mousemove",function(e){var p=getPos(e);mouse.x=p.x;mouse.y=p.y;mouse.active=true;});');
+  lines.push('  canvas.addEventListener("mouseleave",function(){mouse.active=false;});');
+  lines.push('  canvas.addEventListener("touchmove",function(e){e.preventDefault();var p=getPos(e);mouse.x=p.x;mouse.y=p.y;mouse.active=true;},{passive:false});');
+  lines.push('  canvas.addEventListener("touchend",function(){mouse.active=false;});');
+  lines.push('  function tick(){');
+  lines.push('    ctx.fillStyle=BG_FILL; ctx.fillRect(0,0,SIZE,SIZE);');
+  lines.push('    for(var i=0;i<particles.length;i++){');
+  lines.push('      var pt=particles[i];');
+  lines.push('      if(mouse.active){');
+  lines.push('        var dx=pt.x-mouse.x, dy=pt.y-mouse.y, distSq=dx*dx+dy*dy;');
+  lines.push('        if(distSq<REPEL_R*REPEL_R){');
+  lines.push('          var dist=Math.sqrt(distSq)||0.1, force=(REPEL_R-dist)/REPEL_R;');
+  lines.push('          pt.vx+=(dx/dist)*force*REPEL_STRENGTH; pt.vy+=(dy/dist)*force*REPEL_STRENGTH;');
+  lines.push('        }');
+  lines.push('      }');
+  lines.push('      pt.vx+=(pt.tx-pt.x)*SPRING; pt.vy+=(pt.ty-pt.y)*SPRING;');
+  lines.push('      pt.vx*=FRICTION; pt.vy*=FRICTION; pt.x+=pt.vx; pt.y+=pt.vy;');
+  lines.push('      ctx.fillStyle="rgba("+(pt.r|0)+","+(pt.g|0)+","+(pt.b|0)+","+CIRCLE_ALPHA+")";');
+  lines.push('      ctx.beginPath(); ctx.arc(pt.x,pt.y,CIRCLE_R,0,Math.PI*2); ctx.fill();');
+  lines.push('    }');
+  lines.push('    requestAnimationFrame(tick);');
+  lines.push('  }');
+  lines.push('  var img=new Image();');
+  lines.push('  img.onload=function(){');
+  lines.push('    var off=document.createElement("canvas"); off.width=SIZE; off.height=SIZE;');
+  lines.push('    var c=off.getContext("2d"); c.fillStyle="#ffffff"; c.fillRect(0,0,SIZE,SIZE);');
+  lines.push('    drawImageCover(c,img,SIZE,SIZE);');
+  lines.push('    initParticles(gridSample(c,SIZE,SIZE,GRID_STEP));');
+  lines.push('    tick();');
+  lines.push('  };');
+  lines.push('  img.src=PHOTO_DATA_URL;');
+  lines.push('})();');
+  lines.push('<\/script>');
+  lines.push('</body></html>');
+  return lines.join('\n');
+}
+
+downloadHtmlBtn.addEventListener('click', () => {
+  const blob = new Blob([buildEmbedHtml()], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.download = 'particle-portrait-embed.html';
+  link.href = url;
+  link.click();
+  URL.revokeObjectURL(url);
+});
+
+copyHtmlBtn.addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(buildEmbedHtml());
+    const original = copyHtmlBtn.textContent;
+    copyHtmlBtn.textContent = '✓ Copied';
+    setTimeout(() => { copyHtmlBtn.textContent = original; }, 1600);
+  } catch (err) {
+    alert('Could not copy automatically — you can still use "Download embed code" instead.');
+  }
+});
+</script>
+</body>
+</html>
