@@ -11,7 +11,7 @@ Eine interaktive HTML5-Canvas-Komponente, die Fotos clientseitig in ein dynamisc
 - **Tech Stack:** HTML5 Canvas, CSS3, JavaScript (Vector Physics)
 - **Status:** Completed / Active Component
 
-### 2. 💻 [To-do List](./To-do%20List)
+### 2. 📝 [To-do List](./To-do%20List)
 Ein klassisches Web-Projekt zur Demonstration grundlegender Frontend-Strukturen.
 - **Tech Stack:** HTML, CSS, JavaScript
 
