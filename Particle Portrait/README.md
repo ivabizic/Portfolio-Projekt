@@ -23,9 +23,9 @@ Eine interaktive HTML5-Canvas-Komponente für mein zukünftiges digitales Portfo
 Ziel dieses Projekts war es, eine visuell ansprechende, interaktive UI-Komponente für mein persönliches Portfolio zu entwickeln. Ich liebe interaktive Elemente bei Websites und wollte dann, wenn ich fertig mit meinem Portfolio bin und genügend Projekte gesammelt habe, ihm dann einen gewissen Charme verleihen.
 
 ## Screenshots
-<img width="785" height="1050" alt="Screenshot 2026-09-09 at 23 52 04" src="https://github.com/user-attachments/assets/7e9c473b-e581-4ef3-93d3-abcfa967b2dc" />
-<img width="730" height="1050" alt="Screenshot 2026-09-09 at 23 51 06" src="https://github.com/user-attachments/assets/ff67a488-90c7-46fa-b27e-61050f10e5cb" />
-<img width="952" height="1050" alt="Screenshot 2026-09-09 at 23 50 52" src="https://github.com/user-attachments/assets/abee5126-249f-4f58-9bb9-3422574c89f7" />
+<img width="400" alt="Screenshot 2026-09-09 at 23 52 04" src="https://github.com/user-attachments/assets/7e9c473b-e581-4ef3-93d3-abcfa967b2dc" />
+<img width="400" alt="Screenshot 2026-09-09 at 23 51 06" src="https://github.com/user-attachments/assets/ff67a488-90c7-46fa-b27e-61050f10e5cb" />
+<img width="400" alt="Screenshot 2026-09-09 at 23 50 52" src="https://github.com/user-attachments/assets/abee5126-249f-4f58-9bb9-3422574c89f7" />
 
 
 ## 🚀 Schnellstart
