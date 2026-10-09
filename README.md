@@ -15,6 +15,9 @@ Eine interaktive HTML5-Canvas-Komponente, die Fotos clientseitig in ein dynamisc
 Ein klassisches Web-Projekt zur Demonstration grundlegender Frontend-Strukturen.
 - **Tech Stack:** HTML, CSS, JavaScript
 
+### 3. 📝 [LMU Webseite](./LMU%20Info%20point)
+Zusammenstellung wichtiger Links für LMU Studierende um Navigation zu vereinfachen. Orientierung an "LMU Students" App.
+- **Tech Stack:** HTML, CSS, JavaScript
 ---
 
 ✉️ **Kontakt:** [LinkedIn](www.linkedin.com/in/iva-bizic-20528a296) | Portfolio-Besucher willkommen!
